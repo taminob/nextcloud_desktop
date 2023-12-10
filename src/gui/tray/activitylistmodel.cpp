@@ -728,17 +728,17 @@ void ActivityListModel::slotTriggerDefaultAction(const int activityIndex)
             ? InvalidFilenameDialog::FileLocation::NewLocalFile
             : InvalidFilenameDialog::FileLocation::Default;
 
-        _currentInvalidFilenameDialog = new InvalidFilenameDialog(_accountState->account(), folder,
-            folderDir.filePath(activity._file), fileLocation);
-        connect(_currentInvalidFilenameDialog, &InvalidFilenameDialog::accepted, folder, [folder]() {
+        _currentInvalidFilenameDialog.reset(new InvalidFilenameDialog(_accountState->account(), folder,
+            folderDir.filePath(activity._file), fileLocation));
+        connect(_currentInvalidFilenameDialog.get(), &InvalidFilenameDialog::accepted, folder, [folder]() {
             folder->scheduleThisFolderSoon();
         });
-        connect(_currentInvalidFilenameDialog, &InvalidFilenameDialog::acceptedInvalidName, folder, [folder](const QString& filePath) {
+        connect(_currentInvalidFilenameDialog.get(), &InvalidFilenameDialog::acceptedInvalidName, folder, [folder](const QString& filePath) {
             folder->acceptInvalidFileName(filePath);
             folder->scheduleThisFolderSoon();
         });
         _currentInvalidFilenameDialog->open();
-        ownCloudGui::raiseDialog(_currentInvalidFilenameDialog);
+        ownCloudGui::raiseDialog(_currentInvalidFilenameDialog.get());
         return;
     }
 
@@ -766,17 +766,17 @@ void ActivityListModel::triggerCaseClashAction(Activity activity)
     const auto conflictedPath = dir.filePath(conflictedRelativePath);
     const auto conflictTaggedPath = dir.filePath(conflictRecord.path);
 
-    _currentCaseClashFilenameDialog = new CaseClashFilenameDialog(_accountState->account(),
-                                                                  folder,
-                                                                  conflictedPath,
-                                                                  conflictTaggedPath);
-    connect(_currentCaseClashFilenameDialog, &CaseClashFilenameDialog::successfulRename, folder, [folder, activity](const QString& filePath) {
+    _currentCaseClashFilenameDialog.reset(new CaseClashFilenameDialog(_accountState->account(),
+                                                                      folder,
+                                                                      conflictedPath,
+                                                                      conflictTaggedPath));
+    connect(_currentCaseClashFilenameDialog.get(), &CaseClashFilenameDialog::successfulRename, folder, [folder, activity](const QString& filePath) {
         qCInfo(lcActivity) << "successfulRename" << filePath << activity._message;
         folder->acceptCaseClashConflictFileName(activity._message);
         folder->scheduleThisFolderSoon();
     });
     _currentCaseClashFilenameDialog->open();
-    ownCloudGui::raiseDialog(_currentCaseClashFilenameDialog);
+    ownCloudGui::raiseDialog(_currentCaseClashFilenameDialog.get());
 }
 
 void ActivityListModel::displaySingleConflictDialog(const Activity &activity)
@@ -799,16 +799,16 @@ void ActivityListModel::displaySingleConflictDialog(const Activity &activity)
     if (!_currentConflictDialog.isNull()) {
         _currentConflictDialog->close();
     }
-    _currentConflictDialog = new ConflictDialog;
+    _currentConflictDialog.reset(new ConflictDialog);
     _currentConflictDialog->setBaseFilename(baseName);
     _currentConflictDialog->setLocalVersionFilename(conflictedPath);
     _currentConflictDialog->setRemoteVersionFilename(basePath);
     _currentConflictDialog->setAttribute(Qt::WA_DeleteOnClose);
-    connect(_currentConflictDialog, &ConflictDialog::accepted, folder, [folder]() {
+    connect(_currentConflictDialog.get(), &ConflictDialog::accepted, folder, [folder]() {
         folder->scheduleThisFolderSoon();
     });
     _currentConflictDialog->open();
-    ownCloudGui::raiseDialog(_currentConflictDialog);
+    ownCloudGui::raiseDialog(_currentConflictDialog.get());
 }
 
 void ActivityListModel::setHasSyncConflicts(bool conflictsFound)

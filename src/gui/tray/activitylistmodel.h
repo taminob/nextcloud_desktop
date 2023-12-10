@@ -18,6 +18,9 @@
 #include <QtCore>
 
 #include "activitydata.h"
+#include "conflictdialog.h"
+#include "invalidfilenamedialog.h"
+#include "caseclashfilenamedialog.h"
 
 class QJsonDocument;
 
@@ -30,9 +33,6 @@ namespace OCC {
 Q_DECLARE_LOGGING_CATEGORY(lcActivity)
 
 class AccountState;
-class ConflictDialog;
-class InvalidFilenameDialog;
-class CaseClashFilenameDialog;
 
 /**
  * @brief The ActivityListModel
@@ -202,9 +202,9 @@ private:
     static constexpr int _maxActivitiesDays = 30;
     bool _showMoreActivitiesAvailableEntry = false;
 
-    QPointer<ConflictDialog> _currentConflictDialog;
-    QPointer<InvalidFilenameDialog> _currentInvalidFilenameDialog;
-    QPointer<CaseClashFilenameDialog> _currentCaseClashFilenameDialog;
+    QScopedPointer<ConflictDialog, QScopedPointerDeleteLater> _currentConflictDialog;
+    QScopedPointer<InvalidFilenameDialog, QScopedPointerDeleteLater> _currentInvalidFilenameDialog;
+    QScopedPointer<CaseClashFilenameDialog, QScopedPointerDeleteLater> _currentCaseClashFilenameDialog;
 
     AccountState *_accountState = nullptr;
     bool _currentlyFetching = false;
